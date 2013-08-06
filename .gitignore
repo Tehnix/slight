@@ -40,3 +40,4 @@ nosetests.xml
 configs/*
 scripts/*
 repos/*
+*.conf
