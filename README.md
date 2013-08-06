@@ -21,7 +21,7 @@ will serve fine as a lightweight replacement.
 
 ### How? (With a bit more detail) ###
 
-Admittedly, the initial setup of a project requires a little work. A little.
+It's super easy to setup, you practically just set the webhook, and make a deploy script.
 
 1) Make a webhook to your server by going into settings, under your repository, and choose webhook. Set the address to `http://you_server:13373`.
 
