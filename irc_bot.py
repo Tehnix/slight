@@ -43,7 +43,7 @@ def run_forever(sock, nick, channel, queue):
     while run:
         try:
             send_msg = queue.get_nowait()
-            sock.send(send_msg + "\r\n")
+            sock.send("PRIVMSG {0} :{1}\r\n".format(channel, send_msg))
         except Queue.Empty:
             messages = sock.recv(4096).split("\r\n")
             for msg in messages[:-1]:
