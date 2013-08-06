@@ -163,6 +163,8 @@ def create_first_settings_file():
                 "#        channel: \"#lobby\"",
                 "#        nickname: \"slight-ci\""
             ]))
+        return True
+    return False
 
 def check_settings_validity():
     with open('slight.yaml', 'r') as conf:
