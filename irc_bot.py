@@ -3,6 +3,8 @@ import threading
 import Queue
 import ssl
 
+from slight import DEBUG
+
 
 run = True
 queue_holder = {}
@@ -45,7 +47,7 @@ def run_forever(sock, nick, channel, queue):
         try:
             send_msg = queue.get_nowait()
             sock.send("PRIVMSG {0} :{1}\r\n".format(channel, send_msg))
-            print "@@@ PRIVMSG {0} :{1}".format(channel, send_msg)
+            if DEBUG: print "@@@ PRIVMSG {0} :{1}".format(channel, send_msg)
         except Queue.Empty:
             messages = sock.recv(4096).split("\r\n")
             for msg in messages[:-1]:

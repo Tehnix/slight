@@ -10,6 +10,8 @@ import yaml
 
 import irc_bot
 
+DEBUG = False
+
 
 class MyHTTPServer(BaseHTTPServer.HTTPServer):
     allow_reuse_address = True
@@ -91,16 +93,16 @@ def check_repository_existence(data):
     
 def git_update(data):
     """Perform a git pull in the repository."""
-    notify('Hook received by `{0}` for `{1}/{2}`, performing pull...'.format(
-        data["push_name"], data["name"], data["repo_name"]
-    ))
+    #notify('Hook received by `{0}` for `{1}/{2}`, performing pull...'.format(
+    #    data["push_name"], data["name"], data["repo_name"]
+    #))
     repo_dir = 'repos/{0}/{1}'.format(data["name"], data["repo_name"])
     with open(os.devnull, 'w') as devnull:
         subprocess.Popen(
             ['git', 'pull', 'origin', 'master'],
             cwd=repo_dir, stdout=devnull, stderr=devnull
         )
-    notify('Updated `{0}/{1}` with {2} commits!'.format(
+    notify('Updated `{0}/{1}` with {2} commit(s)!'.format(
         data["name"], data["repo_name"], data["commits"]
     ))
     
@@ -110,7 +112,11 @@ def execute_shell_script(data):
     if os.path.exists(script):
         try:
             notify('Starting job for `{0}/{1}`'.format(data["name"], data["repo_name"]))
-            subprocess.call(['./{0}'.format(script)])
+            with open(os.devnull, 'w') as devnull:
+                subprocess.Popen(
+                    ['./{0}'.format(script)],
+                    stdout=devnull, stderr=devnull
+                )
             notify('Done with job `{0}/{1}`!'.format(data["name"], data["repo_name"]))
         except OSError, e:
             if str(e).startswith('[Errno 2]'):
@@ -126,7 +132,7 @@ def execute_shell_script(data):
 
 def notify(msg):
     irc_bot.add_to_queue(msg)
-    print ">>> {0}".format(msg)
+    if DEBUG: print ">>> {0}".format(msg)
 
 def create_first_settings_file():
     if not os.path.exists('slight.conf'):
