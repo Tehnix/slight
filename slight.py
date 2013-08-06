@@ -44,7 +44,7 @@ def parse(json):
         owner_name = json["repository"]["owner"]["name"]
         push_name = json["pusher"]["name"]
         commits = str(len(json["commits"]))
-        refs = json["refs"]
+        ref = json["ref"]
         url = json["repository"]["url"]
     except IndexError:
         return None
@@ -52,7 +52,7 @@ def parse(json):
         return {
             "name": owner_name, "repo_name": repo_name,
             "push_name": push_name, "commits": commits,
-            "refs": refs, "url": url
+            "ref": ref, "url": url
         }
 
 def handle_hook(ident, data):
@@ -65,7 +65,7 @@ def handle_hook(ident, data):
     # Only execute on push to master
     sem = MyHTTPServerHandler.get_lock(ident)
     sem.acquire()
-    if data is not None and data["refs"] == "refs/heads/master":
+    if data is not None and data["ref"] == "refs/heads/master":
         check_repository_existence(data)
         git_update(data)
         execute_shell_script(data)
