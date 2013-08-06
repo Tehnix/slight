@@ -3,7 +3,7 @@ import threading
 import Queue
 import ssl
 
-import ircparser
+from ircparser import ircparser
 from slight import DEBUG
 
 
