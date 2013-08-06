@@ -20,7 +20,7 @@ class MyHTTPServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     locks = {}
     
     @staticmethod
-    def get_lock(cls, ident):
+    def get_lock(ident):
         return MyHTTPServerHandler.locks.get(ident, threading.Semaphore())
     
     def do_POST(self):
