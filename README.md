@@ -35,4 +35,17 @@ Start the server with `python slight.py`, and it'll listen to everything on port
 
 ### Get IRC messages ###
 
-Get notified on IRC. Look into the `slight.conf` settings file....
+On the first run slight will create a file called `slight.yaml`. In here lies settings to make slight notify you about builds and such on IRC. It will set you up with an outcommented version, 
+but, if you're a bit impatient, you can create your own settings file right away. The syntax looks 
+like:
+
+<pre>
+irc:
+    irc.freenode.net:
+        port: 6697
+        ssl: true
+        channel: "#lobby"
+        nickname: "slightCI"
+</pre>
+
+NOTE: A server *must* have all arguments assigned to it, else it will not get accepted (port, ssl, channel and nickname). You can have multiple servers by adding new ones under the other ones.
