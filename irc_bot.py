@@ -16,7 +16,8 @@ def start_irc_bot(server_list):
         nick, channel, port, ssl = (info['nickname'], info['channel'], info['port'], info['ssl'])
         sock = create_socket(server, port, ssl)
         if sock is not None:
-            queue = queue_holder.get(sock, Queue.Queue())
+            queue_holder[sock] = Queue.Queue()
+            queue = queue_holder[sock]
             t = threading.Thread(target=run_forever, args=(sock, nick, channel, queue))
             t.start()
 
@@ -44,6 +45,7 @@ def run_forever(sock, nick, channel, queue):
         try:
             send_msg = queue.get_nowait()
             sock.send("PRIVMSG {0} :{1}\r\n".format(channel, send_msg))
+            print "@@@ PRIVMSG {0} :{1}".format(channel, send_msg)
         except Queue.Empty:
             messages = sock.recv(4096).split("\r\n")
             for msg in messages[:-1]:

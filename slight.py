@@ -83,7 +83,11 @@ def check_repository_existence(data):
     repo_dir = 'repos/{0}/{1}'.format(data["name"], data["repo_name"])
     if not os.path.isdir(repo_dir):
         notify('Cloning `{0}/{1}`...'.format(data["name"], data["repo_name"]))
-        subprocess.call(['git', 'clone', data["url"], repo_dir])
+        with open(os.devnull, 'w') as devnull:
+            subprocess.Popen(
+                ['git', 'clone', data["url"], repo_dir],
+                stdout=devnull, stderr=devnull
+            )
     
 def git_update(data):
     """Perform a git pull in the repository."""
@@ -122,6 +126,7 @@ def execute_shell_script(data):
 
 def notify(msg):
     irc_bot.add_to_queue(msg)
+    print ">>> {0}".format(msg)
 
 def create_first_settings_file():
     if not os.path.exists('slight.conf'):
