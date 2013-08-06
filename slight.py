@@ -102,6 +102,14 @@ def git_update(data):
             ['git', 'pull', 'origin', 'master'],
             cwd=repo_dir, stdout=devnull, stderr=devnull
         )
+        subprocess.Popen(
+            ['git', 'submodule', 'init'],
+            cwd=repo_dir, stdout=devnull, stderr=devnull
+        )
+        subprocess.Popen(
+            ['git', 'submodule', 'update'],
+            cwd=repo_dir, stdout=devnull, stderr=devnull
+        )
     notify('Updated `{0}/{1}` with {2} commit(s)!'.format(
         data["name"], data["repo_name"], data["commits"]
     ))
