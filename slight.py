@@ -8,7 +8,7 @@ import SimpleHTTPServer
 import json
 import yaml
 
-import irc_bot
+from irc import ircbot
 
 DEBUG = False
 
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     check_settings = check_settings_validity()
     if check_settings and check_settings is not None:
         servers = fetch_irc_servers_from_settings()
-        irc_bot.start_irc_bot(servers)
+        ircbot.start_ircbot(servers)
     if check_settings or check_settings is None:
         t = threading.Thread(target=run_server)
         t.start()

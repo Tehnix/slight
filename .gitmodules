@@ -1,0 +1,3 @@
+[submodule "irc/ircparser"]
+	path = irc/ircparser
+	url = git@github.com:Tehnix/PyIRCParser.git
