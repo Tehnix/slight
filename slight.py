@@ -82,7 +82,7 @@ def check_repository_existence(data):
         os.mkdir(owner_dir)
     repo_dir = 'repos/{0}/{1}'.format(data["name"], data["repo_name"])
     if not os.path.isdir(repo_dir):
-        notify('Cloning `{1}/{2}`...'.format(data["name"], data["repo_name"]))
+        notify('Cloning `{0}/{1}`...'.format(data["name"], data["repo_name"]))
         subprocess.call(['git', 'clone', data["url"], repo_dir])
     
 def git_update(data):
