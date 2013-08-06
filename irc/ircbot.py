@@ -1,10 +1,19 @@
+#!/usr/bin/env python
+"""
+A very simple IRC bot that will join the servers and channels specified,
+and then send out whatever is in the message queue, to the channels.
+
+It can also parse input received from the channels, and execute commands
+based on that.
+
+"""
 import socket
 import threading
 import Queue
 import ssl
 
 from ircparser import ircparser
-from slight import DEBUG
+from main import DEBUG
 
 
 run = True

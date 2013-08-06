@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+"""
+The slight server listens to JSON POST requests from Githubs webhooks.
+
+Once a webhook is recieved, a thread is started that pulls down the updates,
+and after that, it executes a deploy/shell script.
+
+It's also able to notify about the progress in IRC channels, via the irc module.
+
+"""
 import sys
 import os
 import subprocess
@@ -8,9 +18,8 @@ import SimpleHTTPServer
 import json
 import yaml
 
+from main import DEBUG
 from irc import ircbot
-
-DEBUG = False
 
 
 class MyHTTPServer(BaseHTTPServer.HTTPServer):
@@ -156,7 +165,7 @@ def create_first_settings_file():
             ]))
 
 def check_settings_validity():
-    with open('slight.conf', 'r') as conf:
+    with open('slight.yaml', 'r') as conf:
         settings = yaml.safe_load(conf)
         irc = settings.get('irc')
         if settings is not None and irc is not None:
@@ -168,7 +177,7 @@ def check_settings_validity():
     return None
 
 def fetch_irc_servers_from_settings():
-    with open('slight.conf', 'r') as conf:
+    with open('slight.yaml', 'r') as conf:
         settings = yaml.safe_load(conf)
         return settings.get('irc')
 
