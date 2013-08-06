@@ -11,6 +11,8 @@ First, you'll need the yaml module, which you can get via `pip install PyYaml`.
 
 Lastly, start the server with `python slight.py`.
 
+NOTE: On the first run of the program, it'll create a settings file called `slight.yaml`. This is, for now, only used for the IRC bot settings, so, if you don't need this, just ignore it, and rerun the program.
+
 ### What? ###
 
 Simply a server that listens to GitHub hooks sent in JSON. Once a hook is received, 
