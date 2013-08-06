@@ -32,3 +32,7 @@ It's super easy to setup, you practically just set the webhook, and make a deplo
 3) A config file is later coming to allow several tweaks (when to send IRC messages, what branch to listen to, etc). The default is, at the moment, that it sends IRC messages for all steps, and, it only listens for a push to the master branch.
 
 Start the server with `python slight.py`, and it'll listen to everything on port 13373.
+
+### Get IRC messages ###
+
+Get notified on IRC.
