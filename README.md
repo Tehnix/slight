@@ -35,4 +35,4 @@ Start the server with `python slight.py`, and it'll listen to everything on port
 
 ### Get IRC messages ###
 
-Get notified on IRC. Look into the `slight.conf` settings file.
+Get notified on IRC. Look into the `slight.conf` settings file...
