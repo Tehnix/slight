@@ -98,16 +98,13 @@ def check_repository_existence(data):
     logging.info("Checking if repository `{0}/{1}` exists...".format(
         data["name"], data["repo_name"]
     ))
-    owner_dir = rel(['repos', data["name"]])
-    if not os.path.isdir(owner_dir):
-        os.mkdir(owner_dir)
     repo_dir = rel(['repos', data["name"], data["repo_name"]])
     if not os.path.isdir(repo_dir):
         notify('Cloning `{0}/{1}`...'.format(data["name"], data["repo_name"]))
         with open(os.devnull, 'w') as devnull:
             subprocess.Popen(
-                ['git', 'clone', data["url"], repo_dir],
-                cwd=owner_dir, stdout=devnull, stderr=devnull
+                ['git', 'clone', data["url"], os.sep.join(['repos', data["name"], data["repo_name"])],
+                cwd=BASE_PATH, stdout=devnull, stderr=devnull
             )
     
 def git_update(data, queue=None):
