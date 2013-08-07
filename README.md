@@ -3,6 +3,8 @@ slight
 
 First off, you'll need the yaml module, which you can get via `pip install PyYaml`.
 
+Other than that,
+
 * Set the GitHub webhook to `http://you_server:13373`.
 * Make a shell script called `scripts/githubUsername_repositoryName`
 * A config file is later coming to allow several tweaks...
