@@ -148,8 +148,8 @@ def execute_shell_script(data, queue=None):
                     cwd=script_path, stdout=devnull, stderr=devnull
                 )
             end = time.time() - start
-            minutes = diff / 60
-            seconds = diff % 60
+            minutes = end / 60
+            seconds = end % 60
             elapsed = "%ds" % seconds
             if minutes >= 1:
                 elapsed = "%dm%s" % (minutes, elapsed)
