@@ -135,7 +135,7 @@ def execute_shell_script(data, queue=None):
     script = '{0}_{1}'.format(
         data["name"].lower(), data["repo_name"].lower()
     )
-    script_path = rel(['scripts', script])
+    script_path = rel(['scripts'])
     if os.path.exists(script_path):
         try:
             notify('Starting build for job `{0}/{1}`'.format(
