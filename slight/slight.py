@@ -103,7 +103,10 @@ def check_repository_existence(data):
         notify('Cloning `{0}/{1}`...'.format(data["name"], data["repo_name"]))
         with open(os.devnull, 'w') as devnull:
             subprocess.Popen(
-                ['git', 'clone', data["url"], os.sep.join(['repos', data["name"], data["repo_name"])],
+                [
+                    'git', 'clone', data["url"], 
+                    os.sep.join(['repos', data["name"], data["repo_name"]])
+                ],
                 cwd=BASE_PATH, stdout=devnull, stderr=devnull
             )
     
