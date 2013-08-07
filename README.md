@@ -1,9 +1,7 @@
 slight
 ======
 
-Super Light Irresistible GitHub Tool... You know, like jenkins, only super light...
-
-First, you'll need the yaml module, which you can get via `pip install PyYaml`.
+First off, you'll need the yaml module, which you can get via `pip install PyYaml`.
 
 * Set the GitHub webhook to `http://you_server:13373`.
 * Make a shell script called `scripts/githubUsername_repositoryName`
@@ -34,6 +32,13 @@ It's super easy to setup, you practically just set the webhook, and make a deplo
 3) A config file is later coming to allow several tweaks (when to send IRC messages, what branch to listen to, etc). The default is, at the moment, that it sends IRC messages for all steps, and, it only listens for a push to the master branch.
 
 Start the server with `./slight.py start`, and it'll listen to everything on port 13373.
+
+### Dependencies ###
+
+The goal is to have as little dependicies on things outside the standard library. Alas, alas, some may have gotten through the needle-eye.
+
+List of needed modules/packages:
+* `yaml` which can be installed with `pip install PyYaml`
 
 ### Get IRC messages ###
 
