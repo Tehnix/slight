@@ -21,7 +21,7 @@ from constants import BASE_PATH
 from irc.messages import notify
 
 
-rel = lambda path: BASE_PATH + os.sep.join(path)
+rel = lambda path: BASE_PATH + os.sep + os.sep.join(path)
 
 
 class MyHTTPServer(BaseHTTPServer.HTTPServer):
