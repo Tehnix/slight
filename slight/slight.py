@@ -138,7 +138,7 @@ def execute_shell_script(data, queue=None):
     script_path = rel(['scripts'])
     if os.path.exists(script_path):
         try:
-            notify('Starting build for job `{0}/{1}`'.format(
+            notify('Starting build for job `{0}/{1}` ...'.format(
                 data["name"], data["repo_name"]
             ), queue)
             start = time.time()
@@ -148,8 +148,13 @@ def execute_shell_script(data, queue=None):
                     cwd=script_path, stdout=devnull, stderr=devnull
                 )
             end = time.time() - start
-            notify('Project `{0}/{1}` build in {2}'.format(
-                data["name"], data["repo_name"]
+            minutes = diff / 60
+            seconds = diff % 60
+            elapsed = "%ds" % seconds
+            if minutes >= 1:
+                elapsed = "%dm%s" % (minutes, elapsed)
+            notify('Project `{0}/{1}` build in {2} !'.format(
+                data["name"], data["repo_name"], elapsed
             ), queue)
         except OSError, excep:
             exception = str(excep)
