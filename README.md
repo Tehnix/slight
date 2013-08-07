@@ -9,9 +9,9 @@ First, you'll need the yaml module, which you can get via `pip install PyYaml`.
 * Make a shell script called `scripts/githubUsername_repositoryName`
 * A config file is later coming to allow several tweaks...
 
-Lastly, start the server with `python slight.py`.
+Lastly, start the server with `./slight.py start`.
 
-NOTE: On the first run of the program, it'll create a settings file called `slight.yaml`. This is, for now, only used for the IRC bot settings, so, if you don't need this, just ignore it, and rerun the program.
+NOTE: On the first run of the program, it'll create a settings file called `settings.yaml`. This is, for now, only used for the IRC bot settings, so, if you don't need this, just ignore it, and rerun the program.
 
 ### What? ###
 
@@ -33,21 +33,32 @@ It's super easy to setup, you practically just set the webhook, and make a deplo
 
 3) A config file is later coming to allow several tweaks (when to send IRC messages, what branch to listen to, etc). The default is, at the moment, that it sends IRC messages for all steps, and, it only listens for a push to the master branch.
 
-Start the server with `python slight.py`, and it'll listen to everything on port 13373.
+Start the server with `./slight.py start`, and it'll listen to everything on port 13373.
 
 ### Get IRC messages ###
 
-On the first run slight will create a file called `slight.yaml`. In here lies settings to make slight notify you about builds and such on IRC. It will set you up with an outcommented version, 
+On the first run slight will create a file called `slight.yaml`. In here lies settings to make slight notify you about builds and such on IRC. It will set you up with an out-commented version, 
 but, if you're a bit impatient, you can create your own settings file right away. The syntax looks 
 like:
 
 <pre>
 irc:
-    irc.freenode.net:
+    operator: "!"
+    enabled: true
+    FreeNode:
+        server: irc.freenode.net:
         port: 6697
         ssl: true
         channel: "#lobby"
-        nickname: "slightCI"
+        nickname: "slight-ci"
+    FreeNodeAlt:
+        server: irc.freenode.net:
+        port: 6697
+        ssl: true
+        channel: "#slight"
+        nickname: "slight-ci"
 </pre>
 
-NOTE: A server *must* have all arguments assigned to it, else it will not get accepted (port, ssl, channel and nickname). You can have multiple servers by adding new ones under the other ones.
+A server only needs the `server`, `channel` and `port` arguments. You can have multiple servers by adding new ones under the other ones.
+
+NOTE: You must have `enabled` set to true for the IRC bots to get started. You can, of couse, also just disable them by setting it to false.

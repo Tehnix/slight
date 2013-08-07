@@ -15,6 +15,7 @@ import urllib2
 import BaseHTTPServer
 import json
 import logging
+import time
 
 from constants import BASE_PATH
 from irc.messages import notify
@@ -125,7 +126,7 @@ def git_update(data, queue=None):
             ['git', 'submodule', 'update'],
             cwd=repo_dir, stdout=devnull, stderr=devnull
         )
-    notify('Updated `{0}/{1}` with {2} commit(s)!'.format(
+    notify('Pulled down {2} commit(s) for project `{0}/{1}`'.format(
         data["name"], data["repo_name"], data["commits"]
     ), queue)
     
@@ -137,15 +138,17 @@ def execute_shell_script(data, queue=None):
     script_path = rel(['scripts', script])
     if os.path.exists(script_path):
         try:
-            notify('Starting job for `{0}/{1}`'.format(
+            notify('Starting build for job `{0}/{1}`'.format(
                 data["name"], data["repo_name"]
             ), queue)
+            start = time.time()
             with open(os.devnull, 'w') as devnull:
                 subprocess.Popen(
                     ['./{0}'.format(script)],
                     cwd=script_path, stdout=devnull, stderr=devnull
                 )
-            notify('Done with job `{0}/{1}`!'.format(
+            end = time.time() - start
+            notify('Project `{0}/{1}` build in {2}'.format(
                 data["name"], data["repo_name"]
             ), queue)
         except OSError, excep:
@@ -162,4 +165,9 @@ def execute_shell_script(data, queue=None):
                     data["name"], data["repo_name"]
                 ))
     else:
-        notify('No script to execute. Please create one first!', queue)
+        notify('Project `{0}/{1}` build in {2}'.format(
+            data["name"], data["repo_name"]
+        ), queue)
+        notify('No build script found for job `{0}/{1}`'.format(
+                data["name"], data["repo_name"]
+            ), queue)
