@@ -94,7 +94,7 @@ def create_socket(addr, port, enable_ssl=False):
 
 def start_ircbot(server_list, operator):
     """Launchs threads for each IRC server."""
-    logging.debug("Launching IRC bots")
+    logging.info("Launching IRC bots")
     for name, server_info in server_list.items():
         server, nick, channel, port, ssl = (
             server_info['server'],
