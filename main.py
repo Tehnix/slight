@@ -47,7 +47,7 @@ class MyDaemon(Daemon):
             main()
  
 if __name__ == "__main__":
-    FORMAT = "%(levelname)s %(asctime)s %(funcName)-25s %(lineno)-4d :: %(message)s"
+    FORMAT = "%(levelname)-5s %(asctime)s %(funcName)-25s %(lineno)-4d :: %(message)s"
     logging.basicConfig(level=logging.DEBUG, format=FORMAT)
     logging.disable(logging.CRITICAL)
     daemon = MyDaemon(PIDFILE)
