@@ -11,40 +11,50 @@ import socket
 import threading
 import Queue
 import ssl
+import logging
 
+import messages
+from constants import BASE_PATH
 from ircparser import ircparser
-from slight.settings import DEBUG
+from slight import slight
 
 
 run = True
-queue_holder = {}
 
-def add_to_queue(msg):
-    """Add a message to all IRC server queues."""
-    for sock, queue in queue_holder.items():
-        queue.put(msg)
 
-def eat_queue(sock, queue, channel):
+def dispatch_messages(sock, queue, channel):
     """Eat from the queue, and send messages to the IRC server."""
     while run:
         try:
-            send_msg = queue.get()
+            message = queue.get()
         except Queue.Empty:
             pass
         else:
-            sock.send("PRIVMSG {0} :{1}\r\n".format(channel, send_msg))
-            if DEBUG: print "@@@ PRIVMSG {0} :{1}".format(channel, send_msg)
+            if message.recipient is None:
+                message.recipient = channel
+            sock.send("{0}\r\n".format(message.msg()))
+            logging.debug("{0}".format(message.msg()))
             queue.task_done()
 
-def parse(parsed, sock, queue, nick, channel):
+def handle_parsed(parsed, sock, queue, nick, channel, operator):
     """Act on the parsed IRC output."""
     if parsed.type == 'PING':
         sock.send('PONG :{0}\r\n'.format(parsed.msg))
-    if parsed.type == 'PRIVMSG':
-        if parsed.msg.startswith('!id '):
-            queue.put(parsed.msg[4:])
+    if parsed.type == 'PRIVMSG' and parsed.msg.startswith(operator):
+        cmd = parsed.msg[1:].split()[0]
+        args = ' '.join(parsed.msg[1:].split()[1:])
+        if cmd == 'id':
+            temp_msg = '{#type} {#recipient} :%s' % parsed.msg[4:]
+            queue.put(messages.Message(temp_msg, recipient=channel))
+        if cmd == 'build':
+            if len(args.split('/')) == 2:
+                owner, repo = args.split('/')
+                slight.execute_shell_script({"name": owner, "repo_name": repo})
+            else:
+                temp_msg = '{#type} {#recipient} :Invalid argument! Usage: %sbuild Owner/Repo' % operator
+                queue.put(messages.Message(temp_msg, recipient=channel))
 
-def listen(sock, queue, nick, channel):
+def listen(sock, queue, nick, channel, operator):
     """Listen to the IRC output."""
     join_channel = True
     buff = ""
@@ -54,7 +64,7 @@ def listen(sock, queue, nick, channel):
             if buff != "":
                 msg = buff + msg
             parsed = ircparser.parse(msg, output='object')
-            parse(parsed, sock, queue, nick, channel)
+            handle_parsed(parsed, sock, queue, nick, channel, operator)
             if join_channel:
                 if "451" in msg or "NOTICE AUTH" in msg:
                     sock.send("NICK {0}\r\n".format(nick))
@@ -78,18 +88,27 @@ def create_socket(addr, port, enable_ssl=False):
     except ssl.SSLError: # Problem has occured with SSL (check port)
         run = False
     else: # We have succesfully connected, so we can start parsing
+        run = True
         return sock
     return None
 
-def start_ircbot(server_list):
+def start_ircbot(server_list, operator):
     """Launchs threads for each IRC server."""
-    for server, info in server_list.items():
-        nick, channel, port, ssl = (info['nickname'], info['channel'], info['port'], info['ssl'])
+    logging.debug("Launching IRC bots")
+    for name, server_info in server_list.items():
+        server, nick, channel, port, ssl = (
+            server_info['server'],
+            server_info.get('nickname', 'slight-ci'), 
+            server_info['channel'], 
+            server_info['port'], 
+            server_info.get('ssl', False)
+        )
         sock = create_socket(server, port, ssl)
         if sock is not None:
-            queue_holder[sock] = Queue.Queue()
-            queue = queue_holder[sock]
-            thread = threading.Thread(target=listen, args=(sock, queue, nick, channel))
+            queue = messages.get_queue(sock)
+            thread = threading.Thread(target=listen, args=(sock, queue, nick, channel, operator))
+            thread.daemon = True
             thread.start()
-            thread = threading.Thread(target=eat_queue, args=(sock, queue, channel))
+            thread = threading.Thread(target=dispatch_messages, args=(sock, queue, channel))
+            thread.daemon = True
             thread.start()

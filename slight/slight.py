@@ -14,9 +14,13 @@ import threading
 import urllib2
 import BaseHTTPServer
 import json
+import logging
 
-from settings import DEBUG
-from irc import ircbot
+from constants import BASE_PATH
+from irc.messages import notify
+
+
+rel = lambda path: BASE_PATH + os.sep.join(path)
 
 
 class MyHTTPServer(BaseHTTPServer.HTTPServer):
@@ -26,12 +30,12 @@ class MyHTTPServer(BaseHTTPServer.HTTPServer):
 
 class MyHTTPServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Handle HTTP requests."""
-    locks = {}
+    semaphores = {}
     
     @staticmethod
-    def get_lock(ident):
+    def get_semaphore(ident):
         """Return the semaphore for the repository."""
-        return MyHTTPServerHandler.locks.get(ident, threading.Semaphore())
+        return MyHTTPServerHandler.semaphores.get(ident, threading.Semaphore())
     
     def do_POST(self):
         """Handle POST requests."""
@@ -42,10 +46,12 @@ class MyHTTPServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             data = parse(json_payload)
             ident = '{0}/{1}'.format(data["name"], data["repo_name"])
             thread = threading.Thread(target=handle_hook, args=(ident, data))
+            thread.daemon = True
             thread.start()
 
 def run_server():
     """Run the HTTP server."""
+    logging.info("Starting HTTP Server...")
     httpd = MyHTTPServer(('', 13373), MyHTTPServerHandler)
     httpd.serve_forever()
 
@@ -74,14 +80,13 @@ def handle_hook(ident, data):
     simultaneously, but, rather sequentially.
      
     """
+    logging.info("Handling hook for `{0}/{1}`".format(data["name"], data["repo_name"]))
     # Only execute on push to master
-    sem = MyHTTPServerHandler.get_lock(ident)
-    sem.acquire()
-    if data is not None and data["ref"] == "refs/heads/master":
-        check_repository_existence(data)
-        git_update(data)
-        execute_shell_script(data)
-    sem.release()
+    with MyHTTPServerHandler.get_semaphore(ident):
+        if data is not None and data["ref"] == "refs/heads/master":
+            check_repository_existence(data)
+            git_update(data)
+            execute_shell_script(data)
 
 def check_repository_existence(data):
     """
@@ -89,19 +94,22 @@ def check_repository_existence(data):
     down the repository from the url received with the hook.
     
     """
-    owner_dir = 'repos/{0}'.format(data["name"])
+    logging.info("Checking if repository `{0}/{1}` exists...".format(
+        data["name"], data["repo_name"]
+    ))
+    owner_dir = rel(['repos', data["name"]])
     if not os.path.isdir(owner_dir):
         os.mkdir(owner_dir)
-    repo_dir = 'repos/{0}/{1}'.format(data["name"], data["repo_name"])
+    repo_dir = rel(['repos', data["name"], data["repo_name"]])
     if not os.path.isdir(repo_dir):
         notify('Cloning `{0}/{1}`...'.format(data["name"], data["repo_name"]))
         with open(os.devnull, 'w') as devnull:
             subprocess.Popen(
                 ['git', 'clone', data["url"], repo_dir],
-                stdout=devnull, stderr=devnull
+                cwd=owner_dir, stdout=devnull, stderr=devnull
             )
     
-def git_update(data):
+def git_update(data, queue=None):
     """Perform a git pull in the repository."""
     repo_dir = 'repos/{0}/{1}'.format(data["name"], data["repo_name"])
     with open(os.devnull, 'w') as devnull:
@@ -119,41 +127,39 @@ def git_update(data):
         )
     notify('Updated `{0}/{1}` with {2} commit(s)!'.format(
         data["name"], data["repo_name"], data["commits"]
-    ))
+    ), queue)
     
-def execute_shell_script(data):
+def execute_shell_script(data, queue=None):
     """Execute the accompanying shell/deploy script for the repo."""
-    script = 'scripts/{0}_{1}'.format(
+    script = '{0}_{1}'.format(
         data["name"].lower(), data["repo_name"].lower()
     )
-    if os.path.exists(script):
+    script_path = rel(['scripts', script])
+    if os.path.exists(script_path):
         try:
             notify('Starting job for `{0}/{1}`'.format(
                 data["name"], data["repo_name"]
-            ))
+            ), queue)
             with open(os.devnull, 'w') as devnull:
                 subprocess.Popen(
                     ['./{0}'.format(script)],
-                    stdout=devnull, stderr=devnull
+                    cwd=script_path, stdout=devnull, stderr=devnull
                 )
             notify('Done with job `{0}/{1}`!'.format(
                 data["name"], data["repo_name"]
-            ))
+            ), queue)
         except OSError, excep:
             exception = str(excep)
             if exception.startswith('[Errno 2]'):
-                notify('No script to execute. Please create one first!')
+                notify('No script to execute. Please create one first!', queue)
             elif exception.startswith('[Errno 13]'):
-                notify('The script is not executable!')
+                notify('The script is not executable!', queue)
             elif exception.startswith('[Errno 8]'):
-                notify('Format error with the script!')
+                notify('Format error with the script!', queue)
             else:
-                notify('Uncaught error, calling script: {0}'.format(exception))
+                notify('Uncaught error, calling script: {0}'.format(exception), queue)
+                logging.exception("Job for `{0}/{1}` threw an exception".format(
+                    data["name"], data["repo_name"]
+                ))
     else:
-        notify('No script to execute. Please create one first!')
-
-def notify(msg):
-    """Add the message to the ircbot queue."""
-    ircbot.add_to_queue(msg)
-    if DEBUG: 
-        print ">>> {0}".format(msg)
+        notify('No script to execute. Please create one first!', queue)

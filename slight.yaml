@@ -1,7 +1,0 @@
-# -- Example of usage --
-irc:
-    irc.codetalk.io:
-        port: 6667
-        ssl: false
-        channel: "#lobby"
-        nickname: "slightCI"
